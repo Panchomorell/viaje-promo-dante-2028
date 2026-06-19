@@ -29,7 +29,7 @@ const statusMeta = {
 };
 
 const specialRules = [
-  { key: "discount", label: "Observaciones/Descuento", pattern: /descuento|beca|cupo|bonific|cuota|dificultad.*pago|facilidad.*pago|problema.*pago/i },
+  { key: "discount", label: "Observaciones/Descuento", pattern: /descuento|beca|cupo|bonific|cuota|dificultad.*pago|facilidad.*pago|problema.*pago|posible.*ayuda|ayuda.*monto|ayuda.*solventar|gran esfuerzo.*solventar|solicito.*ayuda|ped.*ayuda|necesit.*ayuda|\d+%.*ayuda/i },
   { key: "free", label: "Liberado", pattern: /liberad|liberacion|liberación|gratis|sin cargo/i },
   { key: "siblings", label: "Mellizos/gemelos", pattern: /melliz|gemel|herman/i }
 ];
@@ -47,6 +47,10 @@ function normalize(value) {
 function clean(value) {
   const text = String(value ?? "").trim();
   return text.toLowerCase() === "nan" ? "" : text;
+}
+
+function matchesRule(rule, text) {
+  return rule.pattern.test(text) || rule.pattern.test(normalize(text));
 }
 
 function splitStudentName(value) {
@@ -215,7 +219,7 @@ function extractResponse(row) {
     phone: clean(pickField(row, ["phone", "telefono de contacto", "teléfono de contacto", "telefono", "teléfono", "celular"])),
     email: clean(pickField(row, ["correo electronico de contacto", "correo electrónico de contacto", "email", "mail"])),
     observations,
-    flags: specialRules.filter((rule) => rule.pattern.test(`${observations} ${allText}`)).map((rule) => rule.key)
+    flags: specialRules.filter((rule) => matchesRule(rule, `${observations} ${allText}`)).map((rule) => rule.key)
   };
 }
 
