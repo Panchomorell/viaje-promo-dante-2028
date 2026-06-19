@@ -172,15 +172,19 @@ function pickField(row, candidates) {
 
 function detectStatus(row) {
   const field = pickField(row, [
+    "confirmation",
     "confirmacion",
+    "confirmación",
     "participara",
+    "participará",
     "mi hijo participara",
+    "mi hijo participará",
     "viaja",
     "asiste",
     "estado",
     "respuesta"
   ]);
-  const source = normalize(field || Object.values(row).join(" "));
+  const source = normalize(field);
 
   if (/\b(no|no viaja|rechaza|declina|no confirma)\b/.test(source)) return "declined";
   if (/\b(si|sí|viaja|confirmo|confirma|acepta|voy)\b/.test(source)) return "confirmed";
