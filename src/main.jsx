@@ -1,20 +1,26 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
+import * as XLSX from "xlsx";
 import {
   AlertCircle,
   CheckCircle2,
   Download,
   FileUp,
   Filter,
+  Mail,
+  Phone,
   Search,
   Sparkles,
+  UserRound,
   Users,
+  X,
   XCircle
 } from "lucide-react";
 import "./styles.css";
 
 const STUDENT_SOURCE = "/data/students.json";
-const RESPONSE_SOURCE = "/data/respuestas_form.csv";
+const RESPONSE_SOURCE = "/data/responses.json";
+const STORAGE_KEY = "promoDanteResponsesRows";
 
 const statusMeta = {
   confirmed: { label: "Viaja", color: "#16825d", Icon: CheckCircle2 },
@@ -24,7 +30,7 @@ const statusMeta = {
 
 const specialRules = [
   { key: "discount", label: "Cupo/descuento", pattern: /descuento|beca|cupo|bonific|ayuda|cuota|pago/i },
-  { key: "free", label: "Liberado", pattern: /liberad|liberaci[oó]n|gratis|sin cargo/i },
+  { key: "free", label: "Liberado", pattern: /liberad|liberacion|liberación|gratis|sin cargo/i },
   { key: "siblings", label: "Mellizos/gemelos", pattern: /melliz|gemel|herman/i }
 ];
 
@@ -38,11 +44,70 @@ function normalize(value) {
     .trim();
 }
 
-function canonicalName(value) {
-  const raw = String(value || "");
-  if (!raw.includes(",")) return normalize(raw);
-  const [last, first] = raw.split(",").map((part) => normalize(part));
-  return `${first} ${last}`.trim();
+function clean(value) {
+  const text = String(value ?? "").trim();
+  return text.toLowerCase() === "nan" ? "" : text;
+}
+
+function splitStudentName(value) {
+  const raw = clean(value);
+  if (!raw.includes(",")) return { first: "", last: "", display: raw };
+  const [last, first] = raw.split(",").map(clean);
+  return { first, last, display: `${first} ${last}`.trim() };
+}
+
+function personKey({ first, last, name }) {
+  const explicitFirst = normalize(first).split(" ")[0] || "";
+  const explicitLast = normalize(last);
+  if (explicitFirst && explicitLast) return `${explicitFirst} ${explicitLast}`;
+
+  const raw = clean(name);
+  if (raw.includes(",")) {
+    const split = splitStudentName(raw);
+    return personKey({ first: split.first, last: split.last });
+  }
+  return normalize(raw);
+}
+
+function firstToken(value) {
+  return normalize(value).split(" ")[0] || "";
+}
+
+function nameVariants({ first, last, name }) {
+  const raw = clean(name);
+  const split = raw && raw.includes(",") ? splitStudentName(raw) : null;
+  const firstValue = split?.first || first || "";
+  const lastValue = split?.last || last || "";
+  const firstPart = firstToken(firstValue);
+  const lastFull = normalize(lastValue);
+  const lastPart = firstToken(lastValue);
+  const variants = new Set();
+
+  if (firstPart && lastFull) variants.add(`${firstPart} ${lastFull}`);
+  if (firstPart && lastPart) variants.add(`${firstPart} ${lastPart}`);
+  if (lastPart && firstPart) variants.add(`${lastPart} ${firstPart}`);
+  if (raw) variants.add(personKey({ first, last, name: raw }));
+
+  return Array.from(variants).filter(Boolean);
+}
+
+function editDistance(a, b) {
+  const left = normalize(a);
+  const right = normalize(b);
+  if (left === right) return 0;
+  const matrix = Array.from({ length: left.length + 1 }, (_, row) => [row]);
+  for (let col = 1; col <= right.length; col += 1) matrix[0][col] = col;
+  for (let row = 1; row <= left.length; row += 1) {
+    for (let col = 1; col <= right.length; col += 1) {
+      const cost = left[row - 1] === right[col - 1] ? 0 : 1;
+      matrix[row][col] = Math.min(
+        matrix[row - 1][col] + 1,
+        matrix[row][col - 1] + 1,
+        matrix[row - 1][col - 1] + cost
+      );
+    }
+  }
+  return matrix[left.length][right.length];
 }
 
 function detectDelimiter(line) {
@@ -87,7 +152,7 @@ function parseCsv(text) {
   row.push(cell.trim());
   if (row.some(Boolean)) rows.push(row);
 
-  const headers = rows.shift()?.map((header) => normalize(header)) || [];
+  const headers = rows.shift() || [];
   return rows.map((cells) =>
     headers.reduce((item, header, index) => {
       item[header] = cells[index] || "";
@@ -98,27 +163,24 @@ function parseCsv(text) {
 
 function pickField(row, candidates) {
   const entries = Object.entries(row);
-  const exact = candidates.map(normalize);
-  const exactHit = exact.find((name) => row[name]);
-  if (exactHit) return row[exactHit];
-  const fuzzyHit = entries.find(([key]) => exact.some((candidate) => key.includes(candidate)));
-  return fuzzyHit?.[1] || "";
+  const normalizedCandidates = candidates.map(normalize);
+  const exact = entries.find(([key, value]) => value && normalizedCandidates.includes(normalize(key)));
+  if (exact) return exact[1];
+  const fuzzy = entries.find(([key, value]) => value && normalizedCandidates.some((candidate) => normalize(key).includes(candidate)));
+  return fuzzy?.[1] || "";
 }
 
 function detectStatus(row) {
-  const raw = normalize(
-    pickField(row, [
-      "viaja",
-      "confirmacion",
-      "confirma",
-      "respuesta",
-      "asiste",
-      "estado",
-      "viaje de egresados"
-    ])
-  );
-  const combined = normalize(Object.values(row).join(" "));
-  const source = raw || combined;
+  const field = pickField(row, [
+    "confirmacion",
+    "participara",
+    "mi hijo participara",
+    "viaja",
+    "asiste",
+    "estado",
+    "respuesta"
+  ]);
+  const source = normalize(field || Object.values(row).join(" "));
 
   if (/\b(no|no viaja|rechaza|declina|no confirma)\b/.test(source)) return "declined";
   if (/\b(si|sí|viaja|confirmo|confirma|acepta|voy)\b/.test(source)) return "confirmed";
@@ -126,42 +188,79 @@ function detectStatus(row) {
 }
 
 function extractResponse(row) {
-  const name = pickField(row, ["alumno", "nombre", "estudiante", "apellido", "nombre y apellido"]);
-  const observations = pickField(row, [
-    "observaciones",
-    "observacion",
-    "comentarios",
-    "comentario",
-    "solicitud",
-    "aclaraciones",
-    "detalle"
-  ]);
+  const firstName = clean(pickField(row, ["firstName", "firstname", "nombre del alumno", "nombre"]));
+  const lastName = clean(pickField(row, ["lastName", "lastname", "apellido del alumno", "apellido"]));
+  const combinedName = clean(pickField(row, ["name", "alumno", "nombre y apellido", "estudiante"]));
+  const name = combinedName || `${firstName} ${lastName}`.trim();
+  const observations = clean(pickField(row, ["comentarios observaciones", "observaciones", "observacion", "comentarios", "comentario", "solicitud", "aclaraciones"]));
   const allText = Object.values(row).join(" ");
+  const timestamp = clean(pickField(row, ["marca temporal", "timestamp", "fecha"]));
 
   return {
+    timestamp,
+    firstName,
+    lastName,
     name,
-    canonical: canonicalName(name),
+    key: personKey({ first: firstName, last: lastName, name }),
+    variants: nameVariants({ first: firstName, last: lastName, name }),
+    dni: clean(pickField(row, ["dni del alumno", "dni"])),
+    course: clean(pickField(row, ["curso"])),
     status: detectStatus(row),
-    observations: observations || "",
-    rawText: allText,
+    confirmation: clean(pickField(row, ["mi hijo a participara del viaje de egresados", "participara", "confirmacion", "viaja"])),
+    guardian: clean(pickField(row, ["guardian", "apellido y nombre del padre madre o responsable", "padre madre responsable", "responsable", "padre", "madre"])),
+    phone: clean(pickField(row, ["phone", "telefono de contacto", "teléfono de contacto", "telefono", "teléfono", "celular"])),
+    email: clean(pickField(row, ["correo electronico de contacto", "correo electrónico de contacto", "email", "mail"])),
+    observations,
     flags: specialRules.filter((rule) => rule.pattern.test(`${observations} ${allText}`)).map((rule) => rule.key)
   };
 }
 
+function dedupeResponses(rows) {
+  const byStudent = new Map();
+  rows.map(extractResponse).filter((response) => response.key).forEach((response) => {
+    const current = byStudent.get(response.key);
+    const nextTime = Date.parse(response.timestamp);
+    const currentTime = Date.parse(current?.timestamp || "");
+    if (!current || (Number.isFinite(nextTime) && (!Number.isFinite(currentTime) || nextTime >= currentTime))) {
+      byStudent.set(response.key, response);
+    }
+  });
+  return Array.from(byStudent.values());
+}
+
 function mergeStudents(students, responses) {
-  const responseByName = new Map();
+  const responseByKey = new Map();
   responses.forEach((response) => {
-    if (response.canonical) responseByName.set(response.canonical, response);
+    [response.key, ...(response.variants || [])].filter(Boolean).forEach((key) => {
+      if (!responseByKey.has(key)) responseByKey.set(key, response);
+    });
   });
 
+  function findResponse(split) {
+    const variants = nameVariants(split);
+    const exact = variants.map((variant) => responseByKey.get(variant)).find(Boolean);
+    if (exact) return exact;
+
+    const studentFirst = firstToken(split.first);
+    const studentLast = firstToken(split.last);
+    return responses.find((response) => {
+      const responseFirst = firstToken(response.firstName || response.name);
+      const responseLast = firstToken(response.lastName);
+      return responseLast === studentLast && editDistance(responseFirst, studentFirst) <= 2;
+    });
+  }
+
   return students.map((student) => {
-    const response = responseByName.get(canonicalName(student.name));
+    const split = splitStudentName(student.name);
+    const response = findResponse(split);
     return {
       ...student,
+      displayName: split.display || student.name,
       status: response?.status || "pending",
       observations: response?.observations || "",
       flags: response?.flags || [],
-      responseName: response?.name || ""
+      responseName: response?.name || "",
+      response
     };
   });
 }
@@ -179,6 +278,17 @@ function buildSummary(rows) {
     },
     { total: 0, confirmed: 0, declined: 0, pending: 0, special: 0, courses: {} }
   );
+}
+
+async function rowsFromFile(file) {
+  const extension = file.name.split(".").pop()?.toLowerCase();
+  if (extension === "xlsx" || extension === "xls") {
+    const buffer = await file.arrayBuffer();
+    const workbook = XLSX.read(buffer, { type: "array", cellDates: true });
+    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+    return XLSX.utils.sheet_to_json(sheet, { defval: "", raw: false });
+  }
+  return parseCsv(await file.text());
 }
 
 function StatusPill({ status }) {
@@ -223,10 +333,7 @@ function CourseBars({ courses }) {
               {["confirmed", "declined", "pending"].map((status) => (
                 <span
                   key={status}
-                  style={{
-                    width: `${(data[status] / data.total) * 100}%`,
-                    background: statusMeta[status].color
-                  }}
+                  style={{ width: `${(data[status] / data.total) * 100}%`, background: statusMeta[status].color }}
                   title={`${statusMeta[status].label}: ${data[status]}`}
                 />
               ))}
@@ -243,7 +350,7 @@ function CourseBars({ courses }) {
   );
 }
 
-function StudentRow({ student }) {
+function StudentRow({ student, onDetails }) {
   const specialLabels = specialRules.filter((rule) => student.flags.includes(rule.key));
   return (
     <article className="student-row">
@@ -251,9 +358,7 @@ function StudentRow({ student }) {
         <div className="student-order">{student.course}-{student.order}</div>
         <div>
           <h3>{student.name}</h3>
-          {student.responseName && student.responseName !== student.name && (
-            <p>Respuesta: {student.responseName}</p>
-          )}
+          {student.responseName && student.responseName !== student.displayName && <p>Respuesta: {student.responseName}</p>}
         </div>
       </div>
       <div className="student-side">
@@ -268,9 +373,66 @@ function StudentRow({ student }) {
             ))}
           </div>
         )}
+        <button type="button" className="detail-button" onClick={() => onDetails(student)}>
+          <UserRound size={16} />
+          Datos de padres/contacto
+        </button>
         {student.observations && <p className="observation">{student.observations}</p>}
       </div>
     </article>
+  );
+}
+
+function DetailsModal({ student, onClose }) {
+  if (!student) return null;
+  const response = student.response;
+  return (
+    <div className="modal-backdrop" role="presentation" onMouseDown={onClose}>
+      <section className="details-modal" role="dialog" aria-modal="true" aria-label={`Datos de ${student.name}`} onMouseDown={(event) => event.stopPropagation()}>
+        <button type="button" className="modal-close" onClick={onClose} aria-label="Cerrar">
+          <X size={18} />
+        </button>
+        <p className="eyebrow-modal">{student.course}-{student.order}</p>
+        <h2>{student.name}</h2>
+        <StatusPill status={student.status} />
+        <div className="detail-grid">
+          <div>
+            <span>Responsable</span>
+            <strong>{response?.guardian || "Sin dato cargado"}</strong>
+          </div>
+          <div>
+            <span>DNI alumno</span>
+            <strong>{response?.dni || "Sin dato cargado"}</strong>
+          </div>
+          <div>
+            <span>Telefono</span>
+            <strong>{response?.phone || "Sin dato cargado"}</strong>
+          </div>
+          <div>
+            <span>Email</span>
+            <strong>{response?.email || "Sin dato cargado"}</strong>
+          </div>
+        </div>
+        <div className="contact-actions">
+          {response?.phone && (
+            <a href={`tel:${response.phone}`}>
+              <Phone size={16} />
+              Llamar
+            </a>
+          )}
+          {response?.email && (
+            <a href={`mailto:${response.email}`}>
+              <Mail size={16} />
+              Email
+            </a>
+          )}
+        </div>
+        <div className="modal-note">
+          <span>Observaciones</span>
+          <p>{response?.observations || "Sin observaciones."}</p>
+        </div>
+      </section>
+    </div>
   );
 }
 
@@ -281,26 +443,27 @@ function App() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [courseFilter, setCourseFilter] = useState("all");
   const [specialOnly, setSpecialOnly] = useState(false);
-  const [sourceLabel, setSourceLabel] = useState("Sin respuestas cargadas");
+  const [sourceLabel, setSourceLabel] = useState("Cargando respuestas actuales");
+  const [selectedStudent, setSelectedStudent] = useState(null);
 
   useEffect(() => {
     fetch(STUDENT_SOURCE).then((response) => response.json()).then(setStudents);
-    const saved = localStorage.getItem("promoDanteResponsesCsv");
+
+    const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
-      setResponses(parseCsv(saved).map(extractResponse));
-      setSourceLabel("Respuestas cargadas desde este navegador");
+      const parsed = JSON.parse(saved);
+      setResponses(dedupeResponses(parsed));
+      setSourceLabel(`${parsed.length} filas cargadas desde este navegador`);
       return;
     }
+
     fetch(RESPONSE_SOURCE)
-      .then((response) => {
-        if (!response.ok) throw new Error("No responses");
-        return response.text();
+      .then((response) => response.json())
+      .then((rows) => {
+        setResponses(dedupeResponses(rows));
+        setSourceLabel(`${rows.length} respuestas actuales cargadas`);
       })
-      .then((text) => {
-        setResponses(parseCsv(text).map(extractResponse));
-        setSourceLabel("Respuestas leidas desde /data/respuestas_form.csv");
-      })
-      .catch(() => setSourceLabel("Carga el CSV exportado del Form para comparar"));
+      .catch(() => setSourceLabel("Carga CSV o XLSX de respuestas"));
   }, []);
 
   const rows = useMemo(() => mergeStudents(students, responses), [students, responses]);
@@ -308,7 +471,7 @@ function App() {
   const visibleRows = useMemo(() => {
     const needle = normalize(query);
     return rows.filter((row) => {
-      const matchesQuery = normalize(`${row.name} ${row.observations}`).includes(needle);
+      const matchesQuery = normalize(`${row.name} ${row.responseName} ${row.observations} ${row.response?.guardian || ""}`).includes(needle);
       const matchesStatus = statusFilter === "all" || row.status === statusFilter;
       const matchesCourse = courseFilter === "all" || row.course === courseFilter;
       const matchesSpecial = !specialOnly || row.flags.length > 0;
@@ -319,17 +482,34 @@ function App() {
   async function handleFile(event) {
     const file = event.target.files?.[0];
     if (!file) return;
-    const text = await file.text();
-    localStorage.setItem("promoDanteResponsesCsv", text);
-    setResponses(parseCsv(text).map(extractResponse));
-    setSourceLabel(file.name);
+    try {
+      const parsedRows = await rowsFromFile(file);
+      const nextResponses = dedupeResponses(parsedRows);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(parsedRows));
+      setResponses(nextResponses);
+      setSourceLabel(`${nextResponses.length} alumnos actualizados desde ${file.name}`);
+    } catch (error) {
+      console.error(error);
+      setSourceLabel(`No se pudo leer ${file.name}`);
+    } finally {
+      event.target.value = "";
+    }
   }
 
   function exportView() {
-    const lines = ["Curso,Orden,Alumno,Estado,Observaciones"];
+    const lines = ["Curso,Orden,Alumno,Estado,Responsable,Telefono,Email,Observaciones"];
     visibleRows.forEach((row) => {
       lines.push(
-        [row.course, row.order, row.name, statusMeta[row.status].label, row.observations]
+        [
+          row.course,
+          row.order,
+          row.name,
+          statusMeta[row.status].label,
+          row.response?.guardian || "",
+          row.response?.phone || "",
+          row.response?.email || "",
+          row.observations
+        ]
           .map((value) => `"${String(value || "").replace(/"/g, '""')}"`)
           .join(",")
       );
@@ -356,9 +536,9 @@ function App() {
         </div>
         <label className="upload-box">
           <FileUp size={26} />
-          <span>Cargar CSV de respuestas</span>
+          <span>Cargar CSV o XLSX de respuestas</span>
           <small>{sourceLabel}</small>
-          <input type="file" accept=".csv,.tsv,text/csv,text/tab-separated-values" onChange={handleFile} />
+          <input type="file" accept=".csv,.tsv,.xlsx,.xls,text/csv,text/tab-separated-values" onChange={handleFile} />
         </label>
       </header>
 
@@ -376,11 +556,7 @@ function App() {
         <section className="panel controls-panel">
           <div className="search-control">
             <Search size={18} />
-            <input
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="Buscar alumno u observacion"
-            />
+            <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar alumno, responsable u observacion" />
           </div>
           <div className="select-group">
             <Filter size={18} />
@@ -408,10 +584,11 @@ function App() {
 
         <section className="student-list">
           {visibleRows.map((student) => (
-            <StudentRow key={`${student.course}-${student.order}-${student.name}`} student={student} />
+            <StudentRow key={`${student.course}-${student.order}-${student.name}`} student={student} onDetails={setSelectedStudent} />
           ))}
         </section>
       </main>
+      <DetailsModal student={selectedStudent} onClose={() => setSelectedStudent(null)} />
     </div>
   );
 }
