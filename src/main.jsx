@@ -29,7 +29,7 @@ const statusMeta = {
 };
 
 const specialRules = [
-  { key: "discount", label: "Cupo/descuento", pattern: /descuento|beca|cupo|bonific|ayuda|cuota|pago/i },
+  { key: "discount", label: "Observaciones/Descuento", pattern: /descuento|beca|cupo|bonific|cuota|dificultad.*pago|facilidad.*pago|problema.*pago/i },
   { key: "free", label: "Liberado", pattern: /liberad|liberacion|liberación|gratis|sin cargo/i },
   { key: "siblings", label: "Mellizos/gemelos", pattern: /melliz|gemel|herman/i }
 ];
