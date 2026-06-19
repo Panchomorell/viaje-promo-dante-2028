@@ -1,0 +1,376 @@
+:root {
+  color: #172033;
+  background: #f6f7f4;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  background: #f6f7f4;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+.app-shell {
+  min-height: 100vh;
+}
+
+.hero {
+  min-height: 420px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 32px;
+  align-items: end;
+  padding: 48px clamp(18px, 5vw, 72px);
+  color: #fff;
+  background:
+    linear-gradient(110deg, rgba(18, 28, 44, 0.96), rgba(42, 67, 91, 0.82)),
+    radial-gradient(circle at 90% 18%, rgba(255, 224, 138, 0.34), transparent 26%),
+    linear-gradient(135deg, #172033, #42616f);
+}
+
+.hero-copy {
+  max-width: 850px;
+}
+
+.eyebrow {
+  margin: 0 0 14px;
+  color: #ffe08a;
+  font-size: 0.85rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+h1 {
+  max-width: 820px;
+  margin: 0;
+  font-size: clamp(2.3rem, 6vw, 5.4rem);
+  line-height: 0.98;
+  font-weight: 950;
+  letter-spacing: 0;
+}
+
+.hero-copy p:last-child {
+  max-width: 720px;
+  margin: 22px 0 0;
+  color: rgba(255, 255, 255, 0.86);
+  font-size: 1.08rem;
+  line-height: 1.6;
+}
+
+.upload-box {
+  display: grid;
+  gap: 10px;
+  align-content: center;
+  min-height: 170px;
+  padding: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(14px);
+  cursor: pointer;
+}
+
+.upload-box span {
+  font-size: 1.05rem;
+  font-weight: 900;
+}
+
+.upload-box small {
+  color: rgba(255, 255, 255, 0.78);
+  line-height: 1.4;
+}
+
+.upload-box input {
+  display: none;
+}
+
+.main-grid {
+  display: grid;
+  gap: 20px;
+  width: min(1180px, calc(100% - 32px));
+  margin: -48px auto 48px;
+}
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.metric-card,
+.panel,
+.student-row {
+  border: 1px solid #dfe4dc;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 18px 45px rgba(23, 32, 51, 0.08);
+}
+
+.metric-card {
+  min-height: 128px;
+  padding: 18px;
+}
+
+.metric-label {
+  color: #667085;
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.metric-value {
+  margin-top: 10px;
+  font-size: 2.5rem;
+  line-height: 1;
+  font-weight: 950;
+}
+
+.metric-helper {
+  margin-top: 12px;
+  color: #667085;
+  font-size: 0.9rem;
+}
+
+.panel {
+  padding: 18px;
+}
+
+.panel-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  font-weight: 950;
+}
+
+.course-bars {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.course-heading,
+.bar-legend {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.course-heading span,
+.bar-legend {
+  color: #667085;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.stacked-bar {
+  display: flex;
+  height: 18px;
+  overflow: hidden;
+  margin: 10px 0;
+  border-radius: 999px;
+  background: #eef0ec;
+}
+
+.stacked-bar span {
+  min-width: 1px;
+}
+
+.controls-panel {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.search-control {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 46px;
+  flex: 1;
+  padding: 0 14px;
+  border: 1px solid #dfe4dc;
+  border-radius: 8px;
+  background: #f9faf8;
+}
+
+.search-control input {
+  width: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+}
+
+.select-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.select-group select,
+.select-group button {
+  min-height: 46px;
+  border: 1px solid #dfe4dc;
+  border-radius: 8px;
+  background: #fff;
+  color: #172033;
+  font-weight: 850;
+}
+
+.select-group select {
+  padding: 0 34px 0 12px;
+}
+
+.select-group button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 13px;
+  cursor: pointer;
+}
+
+.select-group button.active {
+  border-color: #6b5f2a;
+  background: #fff4c2;
+}
+
+.student-list {
+  display: grid;
+  gap: 10px;
+}
+
+.student-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 0.62fr);
+  gap: 16px;
+  padding: 16px;
+}
+
+.student-main {
+  display: flex;
+  min-width: 0;
+  gap: 14px;
+}
+
+.student-order {
+  display: grid;
+  place-items: center;
+  width: 58px;
+  height: 42px;
+  flex: 0 0 auto;
+  border-radius: 8px;
+  background: #edf2f7;
+  color: #172033;
+  font-weight: 950;
+}
+
+.student-main h3 {
+  margin: 0;
+  color: #172033;
+  font-size: 1.05rem;
+  font-weight: 950;
+}
+
+.student-main p,
+.observation {
+  margin: 6px 0 0;
+  color: #667085;
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+.student-side {
+  display: grid;
+  justify-items: start;
+  gap: 8px;
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 34px;
+  padding: 0 10px;
+  border: 1px solid color-mix(in srgb, var(--tone) 32%, white);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--tone) 11%, white);
+  color: var(--tone);
+  font-size: 0.86rem;
+  font-weight: 950;
+}
+
+.flag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.flag-list span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 30px;
+  padding: 0 9px;
+  border-radius: 999px;
+  background: #fff4c2;
+  color: #6b5f2a;
+  font-size: 0.8rem;
+  font-weight: 900;
+}
+
+@media (max-width: 980px) {
+  .hero {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+
+  .metrics-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .course-bars,
+  .student-row {
+    grid-template-columns: 1fr;
+  }
+
+  .controls-panel {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 640px) {
+  .hero {
+    min-height: 520px;
+    padding: 32px 18px 72px;
+  }
+
+  .main-grid {
+    width: min(100% - 20px, 1180px);
+    margin-top: -56px;
+  }
+
+  .metrics-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .select-group,
+  .select-group select,
+  .select-group button {
+    width: 100%;
+  }
+}

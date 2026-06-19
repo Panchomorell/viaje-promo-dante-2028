@@ -1,0 +1,342 @@
+[
+  {
+    "course": "4A",
+    "order": 1,
+    "name": "ABBATE, Facundo Agustín"
+  },
+  {
+    "course": "4A",
+    "order": 2,
+    "name": "ALBARELLOS, Paz Sofía"
+  },
+  {
+    "course": "4A",
+    "order": 3,
+    "name": "ALEGRE GUERRERO, Zoe"
+  },
+  {
+    "course": "4A",
+    "order": 4,
+    "name": "AYERBE DEMARÍA, Ciro Maximiliano"
+  },
+  {
+    "course": "4A",
+    "order": 5,
+    "name": "BENÍTEZ, María Paulina"
+  },
+  {
+    "course": "4A",
+    "order": 6,
+    "name": "CASTAÑO CATIGLIONE, Atilio"
+  },
+  {
+    "course": "4A",
+    "order": 7,
+    "name": "CAODURO, Julieta Lucía"
+  },
+  {
+    "course": "4A",
+    "order": 8,
+    "name": "CÓDEGA, Isabella Chiara"
+  },
+  {
+    "course": "4A",
+    "order": 9,
+    "name": "CORIA, Malena Josefina"
+  },
+  {
+    "course": "4A",
+    "order": 10,
+    "name": "DEL FAVERO, Dante"
+  },
+  {
+    "course": "4A",
+    "order": 11,
+    "name": "DIMILITO, Mauro Fabrizio"
+  },
+  {
+    "course": "4A",
+    "order": 12,
+    "name": "FAGNANI, Felicitas"
+  },
+  {
+    "course": "4A",
+    "order": 13,
+    "name": "FERNÁNDEZ, Lola"
+  },
+  {
+    "course": "4A",
+    "order": 14,
+    "name": "GONZÁLEZ, Lola"
+  },
+  {
+    "course": "4A",
+    "order": 15,
+    "name": "HORRISBERGER, Guadalupe"
+  },
+  {
+    "course": "4A",
+    "order": 16,
+    "name": "ISSOLIO, Amalia"
+  },
+  {
+    "course": "4A",
+    "order": 17,
+    "name": "LIMONGELLI, Pedro"
+  },
+  {
+    "course": "4A",
+    "order": 18,
+    "name": "LOJDA, Ainhize"
+  },
+  {
+    "course": "4A",
+    "order": 19,
+    "name": "LÓPEZ CASTIEL, Clara"
+  },
+  {
+    "course": "4A",
+    "order": 20,
+    "name": "MORALES HULTEN, Julieta"
+  },
+  {
+    "course": "4A",
+    "order": 21,
+    "name": "MORELL OTAMENDI, Elena"
+  },
+  {
+    "course": "4A",
+    "order": 22,
+    "name": "MORONI, Juan Francisco"
+  },
+  {
+    "course": "4A",
+    "order": 23,
+    "name": "MORONI, María del Carmen"
+  },
+  {
+    "course": "4A",
+    "order": 24,
+    "name": "NAUBERG, Mateo"
+  },
+  {
+    "course": "4A",
+    "order": 25,
+    "name": "PAREDES, Rafael"
+  },
+  {
+    "course": "4A",
+    "order": 26,
+    "name": "PÉREZ, Laureano"
+  },
+  {
+    "course": "4A",
+    "order": 27,
+    "name": "PÉREZ MANSICIDOR, Alma"
+  },
+  {
+    "course": "4A",
+    "order": 28,
+    "name": "RODRÍGUEZ, Amaia"
+  },
+  {
+    "course": "4A",
+    "order": 29,
+    "name": "ROMÁN, Isabella"
+  },
+  {
+    "course": "4A",
+    "order": 30,
+    "name": "RUIZ, Ema"
+  },
+  {
+    "course": "4A",
+    "order": 31,
+    "name": "SAAVEDRA DALL’ORSSO, Maitena"
+  },
+  {
+    "course": "4A",
+    "order": 32,
+    "name": "SÁNCHEZ, Lola"
+  },
+  {
+    "course": "4A",
+    "order": 33,
+    "name": "TOBLER, Sofía"
+  },
+  {
+    "course": "4A",
+    "order": 34,
+    "name": "TORREGROSA RESER, Fátima"
+  },
+  {
+    "course": "4A",
+    "order": 35,
+    "name": "VIGNAU, Emilia"
+  },
+  {
+    "course": "4B",
+    "order": 1,
+    "name": "ALASIA, Milagros"
+  },
+  {
+    "course": "4B",
+    "order": 2,
+    "name": "AQUINO, Joaquín Bautista"
+  },
+  {
+    "course": "4B",
+    "order": 3,
+    "name": "ASTORGA, Sofía"
+  },
+  {
+    "course": "4B",
+    "order": 4,
+    "name": "BONUCCELLI, Nehuel Santiago"
+  },
+  {
+    "course": "4B",
+    "order": 5,
+    "name": "BURGOS SULLE, Santino Bautista"
+  },
+  {
+    "course": "4B",
+    "order": 6,
+    "name": "BUSTOS, Ana Paula"
+  },
+  {
+    "course": "4B",
+    "order": 7,
+    "name": "CALVO, Vicente"
+  },
+  {
+    "course": "4B",
+    "order": 8,
+    "name": "CAMPAGNONI, Gio"
+  },
+  {
+    "course": "4B",
+    "order": 9,
+    "name": "CAPRIOLI, Dante"
+  },
+  {
+    "course": "4B",
+    "order": 10,
+    "name": "CEBALLOS NORESE, Ciro"
+  },
+  {
+    "course": "4B",
+    "order": 11,
+    "name": "COSENTINO, Ramiro"
+  },
+  {
+    "course": "4B",
+    "order": 12,
+    "name": "DALMASSO, Juan Martin"
+  },
+  {
+    "course": "4B",
+    "order": 13,
+    "name": "FILLOPSKI, León"
+  },
+  {
+    "course": "4B",
+    "order": 14,
+    "name": "FRATTINI, Clara"
+  },
+  {
+    "course": "4B",
+    "order": 15,
+    "name": "GALIANO, Joaquín"
+  },
+  {
+    "course": "4B",
+    "order": 16,
+    "name": "GAMBINI, Benjamín"
+  },
+  {
+    "course": "4B",
+    "order": 17,
+    "name": "GAMBINI, Guadalupe"
+  },
+  {
+    "course": "4B",
+    "order": 18,
+    "name": "GATTI, Constanza Anita"
+  },
+  {
+    "course": "4B",
+    "order": 19,
+    "name": "GERMAIN, Agostina"
+  },
+  {
+    "course": "4B",
+    "order": 20,
+    "name": "GERMAIN, Santiago"
+  },
+  {
+    "course": "4B",
+    "order": 21,
+    "name": "GÓNZALEZ, Ciro"
+  },
+  {
+    "course": "4B",
+    "order": 22,
+    "name": "HABERCKON, Lucas Ignacio"
+  },
+  {
+    "course": "4B",
+    "order": 23,
+    "name": "LOBOS, Jazmín"
+  },
+  {
+    "course": "4B",
+    "order": 24,
+    "name": "MEDINA FARA, Fabricio"
+  },
+  {
+    "course": "4B",
+    "order": 25,
+    "name": "MONZALVO, Joaquina Carola"
+  },
+  {
+    "course": "4B",
+    "order": 26,
+    "name": "MORRONE VOGL, Thiago Mateo"
+  },
+  {
+    "course": "4B",
+    "order": 27,
+    "name": "PAOLINI, Luz Delfina"
+  },
+  {
+    "course": "4B",
+    "order": 28,
+    "name": "PISSANI, Layla"
+  },
+  {
+    "course": "4B",
+    "order": 29,
+    "name": "SOIMU, Fernando"
+  },
+  {
+    "course": "4B",
+    "order": 30,
+    "name": "SOIMU, Martín"
+  },
+  {
+    "course": "4B",
+    "order": 31,
+    "name": "TONELLI BOSCO, Franco Agustín"
+  },
+  {
+    "course": "4B",
+    "order": 32,
+    "name": "TORREGROSA RESER, Santiago"
+  },
+  {
+    "course": "4B",
+    "order": 33,
+    "name": "TRÁPANI, María Paula"
+  }
+]
