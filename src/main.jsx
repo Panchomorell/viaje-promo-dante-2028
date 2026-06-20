@@ -21,6 +21,7 @@ import "./styles.css";
 const STUDENT_SOURCE = "/data/students.json";
 const RESPONSE_SOURCE = "/data/responses.json";
 const STORAGE_KEY = "promoDanteResponsesRows";
+const SENSITIVE_PASSWORD = "DA2028";
 
 const statusMeta = {
   confirmed: { label: "Viaja", color: "#16825d", Icon: CheckCircle2 },
@@ -383,11 +384,31 @@ function StudentRow({ student, onDetails }) {
         )}
         <button type="button" className="detail-button" onClick={() => onDetails(student)}>
           <UserRound size={16} />
-          Datos de padres/contacto
+          Ver datos sensibles
         </button>
-        {student.observations && <p className="observation">{student.observations}</p>}
       </div>
     </article>
+  );
+}
+
+function AuthModal({ error, password, onPasswordChange, onSubmit, onClose }) {
+  return (
+    <div className="modal-backdrop" role="presentation" onMouseDown={onClose}>
+      <form className="details-modal auth-modal" role="dialog" aria-modal="true" aria-label="Contraseña requerida" onSubmit={onSubmit} onMouseDown={(event) => event.stopPropagation()}>
+        <button type="button" className="modal-close" onClick={onClose} aria-label="Cerrar">
+          <X size={18} />
+        </button>
+        <p className="eyebrow-modal">Datos sensibles</p>
+        <h2>Contraseña requerida</h2>
+        <p className="auth-copy">Ingresá la contraseña para ver observaciones, responsables y datos de contacto.</p>
+        <label className="password-field">
+          <span>Contraseña</span>
+          <input type="password" value={password} onChange={(event) => onPasswordChange(event.target.value)} autoFocus />
+        </label>
+        {error && <p className="auth-error">{error}</p>}
+        <button type="submit" className="auth-submit">Acceder</button>
+      </form>
+    </div>
   );
 }
 
@@ -453,6 +474,10 @@ function App() {
   const [specialOnly, setSpecialOnly] = useState(false);
   const [sourceLabel, setSourceLabel] = useState("Cargando respuestas actuales");
   const [selectedStudent, setSelectedStudent] = useState(null);
+  const [authTarget, setAuthTarget] = useState(null);
+  const [sensitiveUnlocked, setSensitiveUnlocked] = useState(false);
+  const [password, setPassword] = useState("");
+  const [authError, setAuthError] = useState("");
 
   useEffect(() => {
     fetch(STUDENT_SOURCE).then((response) => response.json()).then(setStudents);
@@ -479,7 +504,7 @@ function App() {
   const visibleRows = useMemo(() => {
     const needle = normalize(query);
     return rows.filter((row) => {
-      const matchesQuery = normalize(`${row.name} ${row.responseName} ${row.observations} ${row.response?.guardian || ""}`).includes(needle);
+      const matchesQuery = normalize(`${row.name} ${row.responseName}`).includes(needle);
       const matchesStatus = statusFilter === "all" || row.status === statusFilter;
       const matchesCourse = courseFilter === "all" || row.course === courseFilter;
       const matchesSpecial = !specialOnly || row.flags.length > 0;
@@ -502,6 +527,36 @@ function App() {
     } finally {
       event.target.value = "";
     }
+  }
+
+  function requestSensitiveAccess(target) {
+    if (sensitiveUnlocked) {
+      if (target === "export") exportView();
+      else setSelectedStudent(target);
+      return;
+    }
+    setAuthTarget(target);
+    setPassword("");
+    setAuthError("");
+  }
+
+  function closeAuth() {
+    setAuthTarget(null);
+    setPassword("");
+    setAuthError("");
+  }
+
+  function handleAuthSubmit(event) {
+    event.preventDefault();
+    if (password !== SENSITIVE_PASSWORD) {
+      setAuthError("Contraseña incorrecta.");
+      return;
+    }
+    setSensitiveUnlocked(true);
+    const target = authTarget;
+    closeAuth();
+    if (target === "export") exportView();
+    else if (target) setSelectedStudent(target);
   }
 
   function exportView() {
@@ -583,7 +638,7 @@ function App() {
               <Sparkles size={16} />
               Observaciones
             </button>
-            <button type="button" onClick={exportView}>
+            <button type="button" onClick={() => requestSensitiveAccess("export")}>
               <Download size={16} />
               Exportar vista
             </button>
@@ -592,11 +647,20 @@ function App() {
 
         <section className="student-list">
           {visibleRows.map((student) => (
-            <StudentRow key={`${student.course}-${student.order}-${student.name}`} student={student} onDetails={setSelectedStudent} />
+            <StudentRow key={`${student.course}-${student.order}-${student.name}`} student={student} onDetails={requestSensitiveAccess} />
           ))}
         </section>
       </main>
       <DetailsModal student={selectedStudent} onClose={() => setSelectedStudent(null)} />
+      {authTarget && (
+        <AuthModal
+          error={authError}
+          password={password}
+          onPasswordChange={setPassword}
+          onSubmit={handleAuthSubmit}
+          onClose={closeAuth}
+        />
+      )}
     </div>
   );
 }
