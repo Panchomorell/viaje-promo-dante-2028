@@ -377,16 +377,16 @@
     "observations": ""
   },
   {
-    "timestamp": "2026-06-18 22:13:17.555000",
-    "firstName": "Julieta Lucia",
+    "timestamp": "2026-06-24 15:55:44.242000",
+    "firstName": "Julieta",
     "lastName": "Caoduro",
-    "name": "Julieta Lucia Caoduro",
+    "name": "Julieta Caoduro",
     "dni": "50613756",
     "course": "A",
     "confirmation": "SI",
-    "guardian": "Marcia Briuschi",
-    "phone": "03489590015",
-    "email": "marciabriu@gmail.com",
+    "guardian": "Dario caoduro",
+    "phone": "3489596075",
+    "email": "dariocaoduro9@gmail.com",
     "observations": ""
   },
   {
@@ -429,17 +429,17 @@
     "observations": ""
   },
   {
-    "timestamp": "2026-06-18 22:31:33.737000",
-    "firstName": "Joaquín",
+    "timestamp": "2026-06-19 08:09:08.338000",
+    "firstName": "Joaquin Conrado",
     "lastName": "Galiano",
-    "name": "Joaquín Galiano",
+    "name": "Joaquin Conrado Galiano",
     "dni": "50550326",
     "course": "B",
     "confirmation": "SI",
-    "guardian": "Valeria Bertozzi",
-    "phone": "0348915454581",
-    "email": "v_bertozzi@hotmail.com",
-    "observations": ""
+    "guardian": "Valeria bertozzi/Juan Ignacio Galiano",
+    "phone": "03489480204 o 3489454581",
+    "email": "jigaliano@hotmail.com",
+    "observations": "v_bertozzi@hotmail.com"
   },
   {
     "timestamp": "2026-06-18 22:35:29.649000",
@@ -505,19 +505,6 @@
     "phone": "1164985433",
     "email": "g_bis25@yahoo.com.ar",
     "observations": ""
-  },
-  {
-    "timestamp": "2026-06-19 08:09:08.338000",
-    "firstName": "Joaquin Conrado",
-    "lastName": "Galiano",
-    "name": "Joaquin Conrado Galiano",
-    "dni": "50550326",
-    "course": "B",
-    "confirmation": "SI",
-    "guardian": "Valeria bertozzi/Juan Ignacio Galiano",
-    "phone": "03489480204 o 3489454581",
-    "email": "jigaliano@hotmail.com",
-    "observations": "v_bertozzi@hotmail.com"
   },
   {
     "timestamp": "2026-06-19 08:19:54.099000",
@@ -817,5 +804,31 @@
     "phone": "",
     "email": "",
     "observations": "avisado a Lorena"
+  },
+  {
+    "timestamp": "2026-06-24 16:38:35.179000",
+    "firstName": "Lola",
+    "lastName": "Sánchez",
+    "name": "Lola Sánchez",
+    "dni": "50.865.512",
+    "course": "A",
+    "confirmation": "SI",
+    "guardian": "Garcete Vera Jéssica",
+    "phone": "3487553790",
+    "email": "jgarcetevera@gmail.com",
+    "observations": ""
+  },
+  {
+    "timestamp": "2026-06-24 16:44:57.482000",
+    "firstName": "Clara",
+    "lastName": "Frattini",
+    "name": "Clara Frattini",
+    "dni": "50250587",
+    "course": "B",
+    "confirmation": "SI",
+    "guardian": "Diego Miguel frattini",
+    "phone": "93517038193",
+    "email": "diegofrattini@gmail.com",
+    "observations": ""
   }
 ]
