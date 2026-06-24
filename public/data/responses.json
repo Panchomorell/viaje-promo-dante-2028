@@ -804,5 +804,18 @@
     "phone": "3489 574283",
     "email": "ritadicamillo@yahoo.com.ar",
     "observations": ""
+  },
+  {
+    "timestamp": "2026-06-24 00:00:00",
+    "firstName": "Joaquina",
+    "lastName": "Monzalvo",
+    "name": "Joaquina Monzalvo",
+    "dni": "",
+    "course": "B",
+    "confirmation": "NO",
+    "guardian": "",
+    "phone": "",
+    "email": "",
+    "observations": "avisado a Lorena"
   }
 ]
