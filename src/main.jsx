@@ -20,7 +20,6 @@ import "./styles.css";
 
 const STUDENT_SOURCE = "/data/students.json";
 const RESPONSE_SOURCE = "/data/responses.json";
-const STORAGE_KEY = "promoDanteResponsesRows";
 const SENSITIVE_PASSWORD = "DA2028";
 
 const statusMeta = {
@@ -391,16 +390,21 @@ function StudentRow({ student, onDetails }) {
   );
 }
 
-function AuthModal({ error, password, onPasswordChange, onSubmit, onClose }) {
+function AuthModal({ error, password, onPasswordChange, onSubmit, onClose, mode }) {
+  const isUpload = mode === "upload";
   return (
     <div className="modal-backdrop" role="presentation" onMouseDown={onClose}>
       <form className="details-modal auth-modal" role="dialog" aria-modal="true" aria-label="Contraseña requerida" onSubmit={onSubmit} onMouseDown={(event) => event.stopPropagation()}>
         <button type="button" className="modal-close" onClick={onClose} aria-label="Cerrar">
           <X size={18} />
         </button>
-        <p className="eyebrow-modal">Datos sensibles</p>
+        <p className="eyebrow-modal">{isUpload ? "Actualizacion cloud" : "Datos sensibles"}</p>
         <h2>Contraseña requerida</h2>
-        <p className="auth-copy">Ingresá la contraseña para ver observaciones, responsables y datos de contacto.</p>
+        <p className="auth-copy">
+          {isUpload
+            ? "Ingresa la contraseña para publicar esta planilla como fuente compartida para todos."
+            : "Ingresa la contraseña para ver observaciones, responsables y datos de contacto."}
+        </p>
         <label className="password-field">
           <span>Contraseña</span>
           <input type="password" value={password} onChange={(event) => onPasswordChange(event.target.value)} autoFocus />
@@ -482,21 +486,29 @@ function App() {
   useEffect(() => {
     fetch(STUDENT_SOURCE).then((response) => response.json()).then(setStudents);
 
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      setResponses(dedupeResponses(parsed));
-      setSourceLabel(`${parsed.length} filas cargadas desde este navegador`);
-      return;
+    async function loadResponses() {
+      try {
+        const apiResponse = await fetch("/api/responses", { cache: "no-store" });
+        if (apiResponse.ok) {
+          const payload = await apiResponse.json();
+          setResponses(dedupeResponses(payload.rows || []));
+          setSourceLabel(`${payload.rows?.length || 0} respuestas cloud cargadas`);
+          return;
+        }
+      } catch (error) {
+        console.warn("Cloud responses unavailable", error);
+      }
+
+      fetch(RESPONSE_SOURCE)
+        .then((response) => response.json())
+        .then((rows) => {
+          setResponses(dedupeResponses(rows));
+          setSourceLabel(`${rows.length} respuestas publicadas cargadas`);
+        })
+        .catch(() => setSourceLabel("Carga CSV o XLSX de respuestas"));
     }
 
-    fetch(RESPONSE_SOURCE)
-      .then((response) => response.json())
-      .then((rows) => {
-        setResponses(dedupeResponses(rows));
-        setSourceLabel(`${rows.length} respuestas actuales cargadas`);
-      })
-      .catch(() => setSourceLabel("Carga CSV o XLSX de respuestas"));
+    loadResponses();
   }, []);
 
   const rows = useMemo(() => mergeStudents(students, responses), [students, responses]);
@@ -517,16 +529,35 @@ function App() {
     if (!file) return;
     try {
       const parsedRows = await rowsFromFile(file);
-      const nextResponses = dedupeResponses(parsedRows);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(parsedRows));
-      setResponses(nextResponses);
-      setSourceLabel(`${nextResponses.length} alumnos actualizados desde ${file.name}`);
+      setAuthTarget({ type: "upload", rows: parsedRows, fileName: file.name });
+      setPassword("");
+      setAuthError("");
     } catch (error) {
       console.error(error);
       setSourceLabel(`No se pudo leer ${file.name}`);
     } finally {
       event.target.value = "";
     }
+  }
+
+  async function publishRows(rowsToPublish, fileName, uploadPassword) {
+    const nextResponses = dedupeResponses(rowsToPublish);
+    setSourceLabel(`Publicando ${nextResponses.length} alumnos desde ${fileName}...`);
+
+    const response = await fetch("/api/responses", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ password: uploadPassword, rows: rowsToPublish })
+    });
+
+    if (!response.ok) {
+      const payload = await response.json().catch(() => ({}));
+      throw new Error(payload.message || payload.error || "No se pudo publicar la planilla");
+    }
+
+    const payload = await response.json();
+    setResponses(dedupeResponses(payload.rows || rowsToPublish));
+    setSourceLabel(`${nextResponses.length} alumnos publicados desde ${fileName}`);
   }
 
   function requestSensitiveAccess(target) {
@@ -546,14 +577,26 @@ function App() {
     setAuthError("");
   }
 
-  function handleAuthSubmit(event) {
+  async function handleAuthSubmit(event) {
     event.preventDefault();
     if (password !== SENSITIVE_PASSWORD) {
       setAuthError("Contraseña incorrecta.");
       return;
     }
-    setSensitiveUnlocked(true);
+
     const target = authTarget;
+    if (target?.type === "upload") {
+      try {
+        await publishRows(target.rows, target.fileName, password);
+        closeAuth();
+      } catch (error) {
+        console.error(error);
+        setAuthError(error.message);
+      }
+      return;
+    }
+
+    setSensitiveUnlocked(true);
     closeAuth();
     if (target === "export") exportView();
     else if (target) setSelectedStudent(target);
@@ -619,7 +662,7 @@ function App() {
         <section className="panel controls-panel">
           <div className="search-control">
             <Search size={18} />
-            <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar alumno, responsable u observacion" />
+            <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar alumno" />
           </div>
           <div className="select-group">
             <Filter size={18} />
@@ -659,6 +702,7 @@ function App() {
           onPasswordChange={setPassword}
           onSubmit={handleAuthSubmit}
           onClose={closeAuth}
+          mode={authTarget?.type === "upload" ? "upload" : "sensitive"}
         />
       )}
     </div>
