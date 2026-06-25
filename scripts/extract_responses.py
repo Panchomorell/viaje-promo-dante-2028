@@ -41,7 +41,10 @@ def main():
 
     source = Path(sys.argv[1])
     target = Path(sys.argv[2])
-    df = pd.read_excel(source)
+    if source.suffix.lower() == ".csv":
+        df = pd.read_csv(source)
+    else:
+        df = pd.read_excel(source)
     columns = list(df.columns)
 
     timestamp_col = column_lookup(columns, "Marca temporal", "timestamp", "fecha")

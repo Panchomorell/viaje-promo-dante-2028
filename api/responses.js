@@ -59,15 +59,14 @@ function getBody(req) {
 export default async function handler(req, res) {
   res.setHeader("Cache-Control", "no-store");
 
-  if (!process.env.GITHUB_TOKEN) {
-    return res.status(503).json({
-      error: "cloud_updates_not_configured",
-      message: "Missing GITHUB_TOKEN environment variable."
-    });
-  }
-
   try {
     if (req.method === "GET") {
+      if (!process.env.GITHUB_TOKEN) {
+        return res.status(503).json({
+          error: "cloud_updates_not_configured",
+          message: "La lectura cloud todavia no esta configurada. Falta GITHUB_TOKEN en Vercel."
+        });
+      }
       const { rows } = await readGithubFile();
       return res.status(200).json({ rows });
     }
@@ -76,6 +75,12 @@ export default async function handler(req, res) {
       const body = getBody(req);
       if (body.password !== ADMIN_PASSWORD) {
         return res.status(401).json({ error: "invalid_password" });
+      }
+      if (!process.env.GITHUB_TOKEN) {
+        return res.status(503).json({
+          error: "cloud_updates_not_configured",
+          message: "La contrasena es correcta, pero falta configurar GITHUB_TOKEN en Vercel para publicar la planilla para todos."
+        });
       }
       if (!Array.isArray(body.rows)) {
         return res.status(400).json({ error: "rows_must_be_array" });
