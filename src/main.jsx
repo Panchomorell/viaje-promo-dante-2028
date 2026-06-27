@@ -36,6 +36,7 @@ const specialRules = [
 
 const manualSensitiveNotes = {
   "alma perez mansicidor": { note: "Liberado", flag: "free" },
+  "atilio castano catiglione": { note: "Liberado", flag: "free" },
   "atilio castano castiglioni": { note: "Liberado", flag: "free" },
   "dante caprioli": { note: "Solicita descuento", flag: "discount" },
   "nehuel bonuccelli": { note: "Solicita descuento", flag: "discount" }
