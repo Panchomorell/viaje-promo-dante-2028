@@ -352,6 +352,21 @@ h1 {
   font-weight: 900;
 }
 
+.twin-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 0 10px;
+  border: 1px solid #f59e0b;
+  border-radius: 8px;
+  background: #ffedd5;
+  color: #9a3412;
+  font-size: 0.82rem;
+  font-weight: 950;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
 .modal-backdrop {
   position: fixed;
   inset: 0;

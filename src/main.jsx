@@ -34,6 +34,15 @@ const specialRules = [
   { key: "siblings", label: "Mellizos/gemelos", pattern: /melliz|gemel|herman/i }
 ];
 
+const manualSensitiveNotes = {
+  "alma perez mansicidor": { note: "Liberado", flag: "free" },
+  "atilio castano castiglioni": { note: "Liberado", flag: "free" },
+  "dante caprioli": { note: "Solicita descuento", flag: "discount" },
+  "nehuel bonuccelli": { note: "Solicita descuento", flag: "discount" }
+};
+
+const twinLastNames = new Set(["GAMBINI", "GERMAIN", "SOIMU"]);
+
 function normalize(value) {
   return String(value || "")
     .normalize("NFD")
@@ -261,12 +270,17 @@ function mergeStudents(students, responses) {
   return students.map((student) => {
     const split = splitStudentName(student.name);
     const response = findResponse(split);
+    const manualNote = manualSensitiveNotes[personKey({ first: split.first, last: split.last, name: student.name })];
+    const flags = Array.from(new Set([...(response?.flags || []), manualNote?.flag].filter(Boolean)));
+    const lastName = student.name.split(",", 1)[0].trim().toUpperCase();
     return {
       ...student,
       displayName: split.display || student.name,
       status: response?.status || "pending",
       observations: response?.observations || "",
-      flags: response?.flags || [],
+      manualNote: manualNote?.note || "",
+      flags,
+      isTwin: twinLastNames.has(lastName),
       responseName: response?.name || "",
       response
     };
@@ -381,6 +395,7 @@ function StudentRow({ student, onDetails }) {
             ))}
           </div>
         )}
+        {student.isTwin && <span className="twin-badge">Mellizos</span>}
         <button type="button" className="detail-button" onClick={() => onDetails(student)}>
           <UserRound size={16} />
           Ver datos sensibles
@@ -419,6 +434,11 @@ function AuthModal({ error, password, onPasswordChange, onSubmit, onClose, mode 
 function DetailsModal({ student, onClose }) {
   if (!student) return null;
   const response = student.response;
+  const observationParts = [response?.observations || ""];
+  if (student.manualNote && !normalize(response?.observations || "").includes(normalize(student.manualNote))) {
+    observationParts.push(student.manualNote);
+  }
+  const observationsText = observationParts.filter(Boolean).join(" | ");
   return (
     <div className="modal-backdrop" role="presentation" onMouseDown={onClose}>
       <section className="details-modal" role="dialog" aria-modal="true" aria-label={`Datos de ${student.name}`} onMouseDown={(event) => event.stopPropagation()}>
@@ -462,7 +482,7 @@ function DetailsModal({ student, onClose }) {
         </div>
         <div className="modal-note">
           <span>Observaciones</span>
-          <p>{response?.observations || "Sin observaciones."}</p>
+          <p>{observationsText || "Sin observaciones."}</p>
         </div>
       </section>
     </div>
