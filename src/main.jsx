@@ -37,11 +37,18 @@ const specialRules = [
 ];
 
 const manualSensitiveNotes = {
-  "alma perez mansicidor": { note: "Liberado", flag: "free" },
   "atilio castano catiglione": { note: "Liberado", flag: "free" },
   "atilio castano castiglioni": { note: "Liberado", flag: "free" },
   "dante caprioli": { note: "Solicita descuento", flag: "discount" },
   "nehuel bonuccelli": { note: "Solicita descuento", flag: "discount" }
+};
+
+const manualFlagRemovals = {
+  "alma perez mansicidor": ["free"]
+};
+
+const manualStatusOverrides = {
+  "thiago morrone vogl": "confirmed"
 };
 
 const twinLastNames = new Set(["GAMBINI", "GERMAIN", "SOIMU"]);
@@ -276,14 +283,18 @@ function mergeStudents(students, responses, adhesions) {
   return students.map((student) => {
     const split = splitStudentName(student.name);
     const response = findResponse(split);
-    const manualNote = manualSensitiveNotes[personKey({ first: split.first, last: split.last, name: student.name })];
-    const flags = Array.from(new Set([...(response?.flags || []), manualNote?.flag].filter(Boolean)));
+    const studentKey = personKey({ first: split.first, last: split.last, name: student.name });
+    const manualNote = manualSensitiveNotes[studentKey];
+    const removedFlags = new Set(manualFlagRemovals[studentKey] || []);
+    const flags = Array.from(
+      new Set([...(response?.flags || []), manualNote?.flag].filter((flag) => flag && !removedFlags.has(flag)))
+    );
     const lastName = student.name.split(",", 1)[0].trim().toUpperCase();
     const adhesion = adhesionByStudent.get(`${student.course}-${student.order}`) || null;
     return {
       ...student,
       displayName: split.display || student.name,
-      status: response?.status || "pending",
+      status: manualStatusOverrides[studentKey] || response?.status || "pending",
       observations: response?.observations || "",
       manualNote: manualNote?.note || "",
       flags,
