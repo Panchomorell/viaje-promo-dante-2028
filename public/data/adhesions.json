@@ -25,6 +25,7 @@
   { "course": "4A", "order": 31, "name": "SAAVEDRA DALL’ORSSO, Maitena", "paid": true, "completed": true },
   { "course": "4A", "order": 34, "name": "TORREGROSA RESER, Fátima", "paid": true, "completed": true },
   { "course": "4A", "order": 35, "name": "VIGNAU, Emilia", "paid": true, "completed": true },
+  { "course": "4B", "order": 1, "name": "ALASIA, Milagros", "paid": true, "completed": true },
   { "course": "4B", "order": 2, "name": "AQUINO, Joaquín Bautista", "paid": true, "completed": true },
   { "course": "4B", "order": 3, "name": "ASTORGA, Sofía", "paid": true, "completed": true },
   { "course": "4B", "order": 4, "name": "BONUCCELLI, Nehuel Santiago", "paid": true, "completed": true },
