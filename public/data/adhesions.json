@@ -35,6 +35,7 @@
   { "course": "4B", "order": 13, "name": "FILLOPSKI, León", "paid": true, "completed": true },
   { "course": "4B", "order": 14, "name": "FRATTINI, Clara", "paid": true, "completed": true },
   { "course": "4B", "order": 15, "name": "GALIANO, Joaquín", "paid": true, "completed": true },
+  { "course": "4B", "order": 16, "name": "GAMBINI, Benjamín", "paid": true, "completed": true },
   { "course": "4B", "order": 17, "name": "GAMBINI, Guadalupe", "paid": true, "completed": true },
   { "course": "4B", "order": 22, "name": "HABERCKON, Lucas Ignacio", "paid": true, "completed": true },
   { "course": "4B", "order": 23, "name": "LOBOS, Jazmín", "paid": true, "completed": true },
