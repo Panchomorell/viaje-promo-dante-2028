@@ -8,6 +8,23 @@ Landing interactiva para cruzar la nomina de 4to A y 4to B con las respuestas ex
 2. Abrir la app.
 3. Usar `Cargar CSV de respuestas`.
 
+## Desarrollo local en Mac
+
+1. Instalar dependencias con `npm install`.
+2. Crear `.env.local` a partir de `.env.example`.
+3. Definir `VITE_CLOUD_API_ORIGIN` con la URL del deployment de Vercel.
+   Opcionalmente, definir `VITE_STUDENT_SOURCE` y `VITE_RESPONSE_SOURCE`
+   con URLs raw de GitHub para que los datos de desarrollo no salgan de
+   archivos locales.
+4. Levantar con `npm run dev`.
+
+En desarrollo, Vite sirve la interfaz localmente y proxyea `/api` al deployment
+de Vercel configurado. Asi la lectura y publicacion de respuestas siguen usando
+la API cloud y el repositorio de GitHub; no hace falta guardar `GITHUB_TOKEN` en
+esta maquina. Si `VITE_CLOUD_API_ORIGIN` no esta definido, la app vuelve al JSON
+definido por `VITE_RESPONSE_SOURCE` o, si tampoco existe, al JSON publicado en
+`public/data/responses.json`.
+
 La app marca:
 
 - quienes confirmaron que viajan

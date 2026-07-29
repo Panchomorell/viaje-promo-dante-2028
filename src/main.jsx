@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import * as XLSX from "xlsx";
 import {
   AlertCircle,
+  BadgeCheck,
   CheckCircle2,
   Download,
   FileUp,
@@ -18,8 +19,9 @@ import {
 } from "lucide-react";
 import "./styles.css";
 
-const STUDENT_SOURCE = "/data/students.json";
-const RESPONSE_SOURCE = "/data/responses.json";
+const STUDENT_SOURCE = import.meta.env.VITE_STUDENT_SOURCE || "/data/students.json";
+const RESPONSE_SOURCE = import.meta.env.VITE_RESPONSE_SOURCE || "/data/responses.json";
+const ADHESION_SOURCE = import.meta.env.VITE_ADHESION_SOURCE || "/data/adhesions.json";
 const SENSITIVE_PASSWORD = "DA2028";
 
 const statusMeta = {
@@ -246,8 +248,11 @@ function dedupeResponses(rows) {
   return Array.from(byStudent.values());
 }
 
-function mergeStudents(students, responses) {
+function mergeStudents(students, responses, adhesions) {
   const responseByKey = new Map();
+  const adhesionByStudent = new Map(
+    adhesions.map((adhesion) => [`${adhesion.course}-${adhesion.order}`, adhesion])
+  );
   responses.forEach((response) => {
     [response.key, ...(response.variants || [])].filter(Boolean).forEach((key) => {
       if (!responseByKey.has(key)) responseByKey.set(key, response);
@@ -274,6 +279,7 @@ function mergeStudents(students, responses) {
     const manualNote = manualSensitiveNotes[personKey({ first: split.first, last: split.last, name: student.name })];
     const flags = Array.from(new Set([...(response?.flags || []), manualNote?.flag].filter(Boolean)));
     const lastName = student.name.split(",", 1)[0].trim().toUpperCase();
+    const adhesion = adhesionByStudent.get(`${student.course}-${student.order}`) || null;
     return {
       ...student,
       displayName: split.display || student.name,
@@ -282,6 +288,8 @@ function mergeStudents(students, responses) {
       manualNote: manualNote?.note || "",
       flags,
       isTwin: twinLastNames.has(lastName),
+      adhesion,
+      hasAdhered: Boolean(adhesion?.paid && adhesion?.completed),
       responseName: response?.name || "",
       response
     };
@@ -294,12 +302,13 @@ function buildSummary(rows) {
       summary.total += 1;
       summary[row.status] += 1;
       if (row.flags.length) summary.special += 1;
+      if (row.hasAdhered) summary.adhered += 1;
       summary.courses[row.course] ||= { total: 0, confirmed: 0, declined: 0, pending: 0 };
       summary.courses[row.course].total += 1;
       summary.courses[row.course][row.status] += 1;
       return summary;
     },
-    { total: 0, confirmed: 0, declined: 0, pending: 0, special: 0, courses: {} }
+    { total: 0, confirmed: 0, declined: 0, pending: 0, special: 0, adhered: 0, courses: {} }
   );
 }
 
@@ -325,16 +334,30 @@ function StatusPill({ status }) {
   );
 }
 
-function MetricCard({ label, value, status, helper }) {
+function MetricCard({ label, value, status, helper, accent, progress }) {
   const meta = status ? statusMeta[status] : null;
   return (
-    <article className="metric-card">
+    <article className={`metric-card${accent ? " metric-card-accent" : ""}`}>
       <div className="metric-label">{label}</div>
       <div className="metric-value" style={{ color: meta?.color || "#172033" }}>
         {value}
       </div>
       <div className="metric-helper">{helper}</div>
+      {typeof progress === "number" && (
+        <div className="metric-progress" aria-label={`${progress}% de adhesión`}>
+          <span style={{ width: `${progress}%` }} />
+        </div>
+      )}
     </article>
+  );
+}
+
+function AdhesionPill() {
+  return (
+    <span className="adhesion-pill">
+      <BadgeCheck size={16} />
+      Adhirió
+    </span>
   );
 }
 
@@ -386,6 +409,7 @@ function StudentRow({ student, onDetails }) {
       </div>
       <div className="student-side">
         <StatusPill status={student.status} />
+        {student.hasAdhered && <AdhesionPill />}
         {specialLabels.length > 0 && (
           <div className="flag-list">
             {specialLabels.map((rule) => (
@@ -449,6 +473,15 @@ function DetailsModal({ student, onClose }) {
         <p className="eyebrow-modal">{student.course}-{student.order}</p>
         <h2>{student.name}</h2>
         <StatusPill status={student.status} />
+        {student.hasAdhered && (
+          <div className="adhesion-detail">
+            <div>
+              <BadgeCheck size={18} />
+              <span>Adhesión confirmada</span>
+            </div>
+            <p>Pago registrado · Adhesión completada</p>
+          </div>
+        )}
         <div className="detail-grid">
           <div>
             <span>Responsable</span>
@@ -493,9 +526,11 @@ function DetailsModal({ student, onClose }) {
 function App() {
   const [students, setStudents] = useState([]);
   const [responses, setResponses] = useState([]);
+  const [adhesions, setAdhesions] = useState([]);
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [courseFilter, setCourseFilter] = useState("all");
+  const [adhesionFilter, setAdhesionFilter] = useState("all");
   const [specialOnly, setSpecialOnly] = useState(false);
   const [sourceLabel, setSourceLabel] = useState("Cargando respuestas actuales");
   const [selectedStudent, setSelectedStudent] = useState(null);
@@ -506,6 +541,7 @@ function App() {
 
   useEffect(() => {
     fetch(STUDENT_SOURCE).then((response) => response.json()).then(setStudents);
+    fetch(ADHESION_SOURCE).then((response) => response.json()).then(setAdhesions);
 
     async function loadResponses() {
       try {
@@ -532,18 +568,23 @@ function App() {
     loadResponses();
   }, []);
 
-  const rows = useMemo(() => mergeStudents(students, responses), [students, responses]);
+  const rows = useMemo(() => mergeStudents(students, responses, adhesions), [students, responses, adhesions]);
   const summary = useMemo(() => buildSummary(rows), [rows]);
+  const adhesionPercentage = summary.total ? Math.round((summary.adhered / summary.total) * 100) : 0;
   const visibleRows = useMemo(() => {
     const needle = normalize(query);
     return rows.filter((row) => {
       const matchesQuery = normalize(`${row.name} ${row.responseName}`).includes(needle);
       const matchesStatus = statusFilter === "all" || row.status === statusFilter;
       const matchesCourse = courseFilter === "all" || row.course === courseFilter;
+      const matchesAdhesion =
+        adhesionFilter === "all" ||
+        (adhesionFilter === "adhered" && row.hasAdhered) ||
+        (adhesionFilter === "not-adhered" && !row.hasAdhered);
       const matchesSpecial = !specialOnly || row.flags.length > 0;
-      return matchesQuery && matchesStatus && matchesCourse && matchesSpecial;
+      return matchesQuery && matchesStatus && matchesCourse && matchesAdhesion && matchesSpecial;
     });
-  }, [rows, query, statusFilter, courseFilter, specialOnly]);
+  }, [rows, query, statusFilter, courseFilter, adhesionFilter, specialOnly]);
 
   async function handleFile(event) {
     const file = event.target.files?.[0];
@@ -624,7 +665,7 @@ function App() {
   }
 
   function exportView() {
-    const lines = ["Curso,Orden,Alumno,Estado,Responsable,Telefono,Email,Observaciones"];
+    const lines = ["Curso,Orden,Alumno,Estado,Adhesion,Pago,Responsable,Telefono,Email,Observaciones"];
     visibleRows.forEach((row) => {
       lines.push(
         [
@@ -632,6 +673,8 @@ function App() {
           row.order,
           row.name,
           statusMeta[row.status].label,
+          row.hasAdhered ? "Completada" : "Sin registrar",
+          row.hasAdhered ? "Registrado" : "Sin registrar",
           row.response?.guardian || "",
           row.response?.phone || "",
           row.response?.email || "",
@@ -676,6 +719,13 @@ function App() {
           <MetricCard label="No viajan" value={summary.declined} status="declined" helper="Respuestas negativas" />
           <MetricCard label="Faltan" value={summary.pending} status="pending" helper="Sin respuesta o indeterminado" />
           <MetricCard label="Con observacion" value={summary.special} helper="Descuento, liberado o hermanos" />
+          <MetricCard
+            label="Adhirieron"
+            value={`${adhesionPercentage}%`}
+            helper={`${summary.adhered} de ${summary.total} con pago y adhesión completos`}
+            accent
+            progress={adhesionPercentage}
+          />
         </section>
 
         <CourseBars courses={summary.courses} />
@@ -697,6 +747,11 @@ function App() {
               <option value="all">4A y 4B</option>
               <option value="4A">4A</option>
               <option value="4B">4B</option>
+            </select>
+            <select value={adhesionFilter} onChange={(event) => setAdhesionFilter(event.target.value)}>
+              <option value="all">Todas las adhesiones</option>
+              <option value="adhered">Adhirieron</option>
+              <option value="not-adhered">Sin adhesión registrada</option>
             </select>
             <button type="button" className={specialOnly ? "active" : ""} onClick={() => setSpecialOnly((value) => !value)}>
               <Sparkles size={16} />

@@ -104,7 +104,7 @@ h1 {
 
 .metrics-grid {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 12px;
 }
 
@@ -141,6 +141,26 @@ h1 {
   margin-top: 12px;
   color: #667085;
   font-size: 0.9rem;
+}
+
+.metric-card-accent {
+  border-color: #92cdb7;
+  background: linear-gradient(145deg, #ffffff, #effaf5);
+}
+
+.metric-progress {
+  height: 7px;
+  overflow: hidden;
+  margin-top: 12px;
+  border-radius: 999px;
+  background: #dfece6;
+}
+
+.metric-progress span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: #16825d;
 }
 
 .panel {
@@ -333,6 +353,20 @@ h1 {
   font-weight: 950;
 }
 
+.adhesion-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 34px;
+  padding: 0 10px;
+  border: 1px solid #92cdb7;
+  border-radius: 999px;
+  background: #eaf8f2;
+  color: #0c6b4b;
+  font-size: 0.86rem;
+  font-weight: 950;
+}
+
 .flag-list {
   display: flex;
   flex-wrap: wrap;
@@ -424,6 +458,28 @@ h1 {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
   margin-top: 18px;
+}
+
+.adhesion-detail {
+  margin-top: 14px;
+  padding: 13px;
+  border: 1px solid #92cdb7;
+  border-radius: 8px;
+  background: #effaf5;
+  color: #0c6b4b;
+}
+
+.adhesion-detail div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 950;
+}
+
+.adhesion-detail p {
+  margin: 7px 0 0 26px;
+  color: #326a58;
+  font-size: 0.9rem;
 }
 
 .detail-grid div,
@@ -543,7 +599,7 @@ h1 {
   }
 
   .metrics-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .course-bars,

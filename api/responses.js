@@ -5,12 +5,15 @@ const FILE_PATH = process.env.RESPONSES_FILE_PATH || "public/data/responses.json
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "DA2028";
 
 function githubHeaders() {
-  return {
+  const headers = {
     Accept: "application/vnd.github+json",
-    Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
     "Content-Type": "application/json",
     "X-GitHub-Api-Version": "2022-11-28"
   };
+  if (process.env.GITHUB_TOKEN) {
+    headers.Authorization = `Bearer ${process.env.GITHUB_TOKEN}`;
+  }
+  return headers;
 }
 
 function decodeContent(content) {
@@ -61,12 +64,6 @@ export default async function handler(req, res) {
 
   try {
     if (req.method === "GET") {
-      if (!process.env.GITHUB_TOKEN) {
-        return res.status(503).json({
-          error: "cloud_updates_not_configured",
-          message: "La lectura cloud todavia no esta configurada. Falta GITHUB_TOKEN en Vercel."
-        });
-      }
       const { rows } = await readGithubFile();
       return res.status(200).json({ rows });
     }
