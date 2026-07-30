@@ -582,7 +582,9 @@ function App() {
 
   const rows = useMemo(() => mergeStudents(students, responses, adhesions), [students, responses, adhesions]);
   const summary = useMemo(() => buildSummary(rows), [rows]);
-  const adhesionPercentage = summary.total ? Math.round((summary.adhered / summary.total) * 100) : 0;
+  const adhesionPercentage = summary.confirmed
+    ? Math.round((summary.adhered / summary.confirmed) * 100)
+    : 0;
   const visibleRows = useMemo(() => {
     const needle = normalize(query);
     return rows.filter((row) => {
@@ -732,9 +734,9 @@ function App() {
           <MetricCard label="Faltan" value={summary.pending} status="pending" helper="Sin respuesta o indeterminado" />
           <MetricCard label="Con observacion" value={summary.special} helper="Descuento, liberado o hermanos" />
           <MetricCard
-            label="Adhirieron"
+            label="Adhirieron entre quienes viajan"
             value={`${adhesionPercentage}%`}
-            helper={`${summary.adhered} de ${summary.total} con pago y adhesión completos`}
+            helper={`${summary.adhered} de ${summary.confirmed} que viajan completaron pago y adhesión`}
             accent
             progress={adhesionPercentage}
           />
