@@ -48,7 +48,9 @@ const manualFlagRemovals = {
 };
 
 const manualStatusOverrides = {
+  "agostina germain": "confirmed",
   "maria moroni": "declined",
+  "santiago germain": "confirmed",
   "thiago morrone vogl": "confirmed"
 };
 
