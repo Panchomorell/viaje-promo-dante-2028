@@ -37,6 +37,7 @@ const specialRules = [
 ];
 
 const manualSensitiveNotes = {
+  "thiago morrone vogl": { note: "Solicita descuento", flag: "discount" },
   "atilio castano catiglione": { note: "Liberado", flag: "free" },
   "atilio castano castiglioni": { note: "Liberado", flag: "free" },
   "dante caprioli": { note: "Solicita descuento", flag: "discount" },
@@ -48,6 +49,7 @@ const manualFlagRemovals = {
 };
 
 const manualStatusOverrides = {
+  "amaia rodriguez": "declined",
   "agostina germain": "confirmed",
   "maria moroni": "declined",
   "santiago germain": "confirmed",
